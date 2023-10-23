@@ -1,0 +1,64 @@
+aws:
+  sqs:
+    client:
+      accessKey: localAccessKey
+      secretKey: localSecretKey
+      region: "eu-central-1"
+      endpoint: "http://host.docker.internal:30008/000000000000/"
+      account: "/000000000000/"
+    consumers: EXT_REQUEST,TRIGGER,CACHE_REQUEST,CACHE_RESPONSE,VEHICLE_DATA_REQUEST,VEHICLE_DATA_RESPONSE,PROCESSED,HISTORY
+    producers: EXT_REQUEST,TRIGGER,CACHE_REQUEST,CACHE_RESPONSE,VEHICLE_DATA_REQUEST,VEHICLE_DATA_RESPONSE,PROCESSED,HISTORY,ROLLED_OUT
+    processingTime: 500
+
+application:
+  ext-request-proxy: true
+  history: true
+
+spring:
+  main:
+    defaultTimeZone: Europe/Berlin
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  datasource:
+    url: jdbc:postgresql://localhost:30005/historydb
+    username: user
+    password: 33wNAGeuAPg2
+  jmx:
+    enabled: false
+
+debug: false
+
+logging:
+  level:
+    root: INFO
+    org.springframework:
+      boot.autoconfigure: INFO
+      web: INFO
+  pattern:
+    dateformat: yyyy-MM-dd HH:mm:ss.SSS,Europe/Berlin
+
+
+server:
+  error:
+    include-message: always
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    tags:
+      application: 'overwriteInK8s'
+
+cloud:
+  aws:
+    stack:
+      auto: false
+

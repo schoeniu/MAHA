@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: cup
+
+resources:
+  - dashboard-config-queue.yaml
+  - dashboard-config-jvm.yaml
+  - config.yaml
+  - datasource.yaml
+  - volume-claim.yaml
+  - deployment.yaml
+  - service.yaml
+
+
+configMapGenerator:
+  - name: jvm-dashboard.json
+    files:
+      - jvm-dashboard.json
+  - name: queue-dashboard.json
+    files:
+      - queue-dashboard.json
+
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    app: grafana

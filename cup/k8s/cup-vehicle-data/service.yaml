@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cup-vehicle-data
+  namespace: cup
+spec:
+  selector:
+    app: cup-vehicle-data
+  type: NodePort
+  ports:
+    - name: "cup-vehicle-data"
+      port: 8080
+      targetPort: 8080
+      nodePort: 30083

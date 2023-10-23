@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ext-request-proxy
+  namespace: cup
+spec:
+  selector:
+    matchLabels:
+      app: ext-request-proxy
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 2
+  template:
+    metadata:
+      labels:
+        app: ext-request-proxy
+        logtail: 'true'
+      annotations:
+        prometheus.io/scrape: 'true'
+    spec:
+      containers:
+        - name: ext-request-proxy
+          image: cup:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 500M
+            limits:
+              cpu: 1000m
+              memory: 500M
+          env:
+            - name: aws.sqs.consumers
+              value: ''
+            - name: aws.sqs.producers
+              value: 'EXT_REQUEST'
+            - name: application.ext-request-proxy
+              value: 'true'
+            - name: application.history
+              value: 'false'
+            - name: logging.level.root
+              value: 'INFO'
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_DB
+            - name: spring.datasource.url
+              value: jdbc:postgresql://postgres.cup:5432/$(POSTGRES_DB)
+            - name: spring.datasource.username
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_USER
+            - name: spring.datasource.password
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: management.metrics.tags.application
+              value: 'ext-request-proxy'

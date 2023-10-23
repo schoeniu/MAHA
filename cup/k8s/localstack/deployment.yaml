@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: localstack
+  namespace: cup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: localstack
+  template:
+    metadata:
+      labels:
+        app: localstack
+    spec:
+      containers:
+        - name: localstack
+          image: cuplocalstack:1.0
+          ports:
+            - name: "edge"
+              containerPort: 4566
+              protocol: TCP
+            - name: "ui"
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 2G
+            limits:
+              cpu: "2"
+              memory: 2G
+          env:
+            - name: SERVICES
+              value: sqs
+            - name: DOCKER_HOST
+              value: "unix:///var/run/docker.sock"

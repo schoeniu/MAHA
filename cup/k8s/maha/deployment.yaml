@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maha
+  namespace: cup
+spec:
+  selector:
+    matchLabels:
+      app: maha
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: maha
+    spec:
+      serviceAccountName: maha
+      automountServiceAccountToken: true
+      containers:
+        - name: maha
+          image: maha:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 22
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
+          resources:
+            requests:
+              cpu: 100m
+              memory: 500M
+            limits:
+              cpu: '1'
+              memory: 500M
+          env:
+            - name: logging.level.root
+              value: 'INFO'
+            - name: management.metrics.tags.application
+              value: 'maha'
+          volumeMounts:
+            - name: scaling-config
+              mountPath: /target/config
+              readOnly: true
+      volumes:
+        - name: scaling-config
+          configMap:
+            name: scaling-config.yaml

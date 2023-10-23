@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticmq
+  namespace: cup
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: elasticmq
+  template:
+    metadata:
+      labels:
+        app: elasticmq
+    spec:
+      containers:
+        - name: elasticmq
+          image: elasticmq:1.0
+          ports:
+            - name: "api"
+              containerPort: 9324
+              protocol: TCP
+            - name: "ui"
+              containerPort: 9325
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 2G
+            limits:
+              cpu: "2"
+              memory: 2G

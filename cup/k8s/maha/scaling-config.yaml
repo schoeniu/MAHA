@@ -1,0 +1,74 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: scaling-config.yaml
+  namespace: cup
+data:
+  application-k8s.yaml: |-
+    scaling-config:
+      strategy:
+        exportMetrics: true
+        scalingEnabled: true
+        followUpScalingEnabled: true
+        queueDecreasePerMinute: 1.0
+        downScaleStabilizationSeconds: 60
+        maxNumberOfPods: 30
+      queuesConsumedFrom:
+        EXT_REQUEST:
+          serviceName: "cup-trigger"
+          consumptionRate: 115.0
+          queuesProducedTo:
+            TRIGGER:
+              relativeProductionRate: 1.0
+            HISTORY:
+              relativeProductionRate: 1.0
+        TRIGGER:
+          serviceName: "cup-process"
+          consumptionRate: 115.0
+          queuesProducedTo:
+            CACHE_REQUEST:
+              relativeProductionRate: 1.0
+        CACHE_REQUEST:
+          serviceName: "cup-cache"
+          consumptionRate: 115.0
+          queuesProducedTo:
+            CACHE_RESPONSE:
+              relativeProductionRate: 1.0
+        CACHE_RESPONSE:
+          serviceName: "cup-process"
+          consumptionRate: 115.0
+          queuesProducedTo:
+            VEHICLE_DATA_REQUEST:
+              relativeProductionRate: 0.7
+            PROCESSED:
+              relativeProductionRate: 0.3
+            HISTORY:
+              relativeProductionRate: 1.0
+        VEHICLE_DATA_REQUEST:
+          serviceName: "cup-vehicle-data"
+          consumptionRate: 115.0
+          queuesProducedTo:
+            VEHICLE_DATA_RESPONSE:
+              relativeProductionRate: 1.0
+        VEHICLE_DATA_RESPONSE:
+          serviceName: "cup-process"
+          consumptionRate: 115.0
+          queuesProducedTo:
+            PROCESSED:
+              relativeProductionRate: 1.0
+            HISTORY:
+              relativeProductionRate: 1.0
+        PROCESSED:
+          serviceName: "cup-rollout"
+          consumptionRate: 115.0
+          queuesProducedTo:
+            ROLLED_OUT:
+              relativeProductionRate: 1.0
+            HISTORY:
+              relativeProductionRate: 1.0
+        HISTORY:
+          serviceName: "cup-history"
+          consumptionRate: 115.0
+        ROLLED_OUT:
+          serviceName: ""
+          consumptionRate: 0

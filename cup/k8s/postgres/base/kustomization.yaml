@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - secrets.yaml
+  - volume.yaml
+  - volume-claim.yaml
+  - deployment.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: sql-startup
+    files:
+      - create_tables.sql
+
+generatorOptions:
+  disableNameSuffixHash: true

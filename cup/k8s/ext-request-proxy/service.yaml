@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ext-request-proxy
+  namespace: cup
+spec:
+  selector:
+    app: ext-request-proxy
+  type: NodePort
+  ports:
+    - name: "ext-request-proxy"
+      port: 8080
+      targetPort: 8080
+      nodePort: 30071

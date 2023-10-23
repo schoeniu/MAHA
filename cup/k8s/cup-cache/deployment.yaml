@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cup-cache
+  namespace: cup
+spec:
+  selector:
+    matchLabels:
+      app: cup-cache
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: cup-cache
+        logtail: 'true'
+      annotations:
+        prometheus.io/scrape: 'true'
+    spec:
+      containers:
+        - name: cup-cache
+          image: cup:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 500M
+            limits:
+              cpu: 1000m
+              memory: 500M
+          env:
+            - name: aws.sqs.consumers
+              value: 'CACHE_REQUEST'
+            - name: aws.sqs.producers
+              value: 'CACHE_RESPONSE'
+            - name: application.ext-request-proxy
+              value: 'false'
+            - name: application.history
+              value: 'false'
+            - name: logging.level.root
+              value: 'INFO'
+            - name: management.metrics.tags.application
+              value: 'cup-cache'

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: maha
+  namespace: cup
+spec:
+  selector:
+    app: maha
+  type: NodePort
+  ports:
+    - name: "maha"
+      port: 8080
+      targetPort: 8080
+      nodePort: 30070

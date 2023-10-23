@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticmq
+  namespace: cup
+spec:
+  selector:
+    app: elasticmq
+  type: NodePort
+  ports:
+    - name: "api"
+      port: 9324
+      targetPort: 9324
+      nodePort: 30008
+    - name: "ui"
+      port: 9325
+      targetPort: 9325
+      nodePort: 30009

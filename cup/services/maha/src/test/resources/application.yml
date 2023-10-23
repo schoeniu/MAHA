@@ -1,0 +1,35 @@
+aws:
+  sqs:
+    client:
+      accessKey: localAccessKey
+      secretKey: localSecretKey
+      region: "eu-central-1"
+      endpoint: "http://host.docker.internal:30001/000000000000/"
+
+kubernetes:
+  config:
+    namespace: cup
+
+logging:
+  level:
+    root: INFO
+    org.springframework.boot.autoconfigure: INFO
+  pattern:
+    dateformat: yyyy-MM-dd HH:mm:ss.SSS,Europe/Berlin
+
+server:
+  error:
+    include-message: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    tags:
+      application: 'overwriteInK8s'
+
+spring:
+  main:
+    defaultTimeZone: Europe/Berlin

@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: grafana
+  name: grafana
+  namespace: cup
+spec:
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      securityContext:
+        fsGroup: 472
+        supplementalGroups:
+          - 0
+      containers:
+        - name: grafana
+          image: grafana/grafana:10.2.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http-grafana
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /robots.txt
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 2
+          livenessProbe:
+            failureThreshold: 30
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 3000
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 250m
+              memory: 750Mi
+          volumeMounts:
+            - mountPath: /var/lib/grafana
+              name: grafana-pv
+            - mountPath: /etc/grafana
+              name: config
+            - mountPath: /etc/grafana/provisioning/datasources
+              name: datasource
+            - mountPath: /etc/grafana/provisioning/dashboards
+              name: dashboard-config
+            - mountPath: /var/lib/grafana/dashboards/jvm
+              name: jvm-dashboard
+            - mountPath: /var/lib/grafana/dashboards/queue
+              name: queue-dashboard
+      volumes:
+        - name: grafana-pv
+          persistentVolumeClaim:
+            claimName: grafana-pvc
+        - name: config
+          configMap:
+            name: grafana.ini
+        - name: datasource
+          configMap:
+            name: datasource.yml
+        - name: dashboard-config
+          projected:
+            sources:
+              - configMap:
+                  name: dashboard-jvm.yml
+              - configMap:
+                  name: dashboard-queue.yml
+        - name: jvm-dashboard
+          configMap:
+            name: jvm-dashboard.json
+        - name: queue-dashboard
+          configMap:
+            name: queue-dashboard.json
